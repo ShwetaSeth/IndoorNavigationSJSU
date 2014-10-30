@@ -1,0 +1,86 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <com.sample.compass.CameraSurfaceView
+        android:id="@+id/cameraSurfaceView"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" />
+    
+    <com.sample.compass.DrawSurfaceView
+	    android:id="@+id/drawSurfaceView"
+	    android:layout_width="fill_parent"
+	    android:layout_height="fill_parent" />
+    
+    
+    <Button
+        android:id="@+id/button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/textView1"
+        android:layout_below="@+id/textView1"
+        android:onClick="onNavigateButtonClick"
+        android:layout_marginTop="130dp"
+        android:text="Navigate" />
+    
+	
+    <TextView
+        android:id="@+id/location"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="10dp"
+        android:gravity="center"
+        android:textColor="#008000"
+        android:textStyle="bold" />
+    	
+</FrameLayout>
+
+<!-- <RelativeLayout
+    	android:layout_width="match_parent"
+    	android:layout_height="match_parent"
+    	android:background="#000000" 
+    	android:visibility="gone">
+
+    <ImageView
+        android:id="@+id/compassImage"
+        android:contentDescription="@string/imageDesc"
+        android:layout_centerInParent="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="40dp"
+        android:src="@drawable/compass" />
+    
+    <LinearLayout
+        android:id="@+id/ll1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"        
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/compassImage"        
+        android:orientation="horizontal"
+        android:gravity="center"
+        >
+        
+    <TextView
+        android:id="@+id/orientation"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"        
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:layout_marginRight="20dp"
+        android:text="@string/textView" />
+	
+    <TextView
+        android:id="@+id/location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold" />
+    
+    </LinearLayout>
+    
+    
+</RelativeLayout> -->
