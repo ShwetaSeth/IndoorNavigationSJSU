@@ -31,6 +31,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.entity.AbstractHttpEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 
@@ -40,6 +41,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -49,7 +52,9 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.protocol.ExecutionContext;
 
+import com.sample.parser.ClassNode;
 import com.sample.parser.JsonParser;
+import com.sample.parser.ShortestPath;
 
 //import com.google.gson.Gson;
 
@@ -69,144 +74,231 @@ public class DatabaseUtil extends AsyncTask<Context, Context, Context>
 	
 	private Button button;
 	static Context  context;
+	//private ShortestPath path;
 	public static String SERVER_ROOT_URI = "http://ec2-54-68-225-240.us-west-2.compute.amazonaws.com:7474/db/data/";
 	@Override
 	protected Context doInBackground(Context... params) {
-	
+		
 	    context = params[0];
-	    
-		//checkDatabaseIsRunning(context);
-	   URI firstNode = null;
-	   URI secondNode = null;
-	   URI thirdNode = null;
-	   URI fourthNode = null;
-	   try {
-		   
-	   int id1 = getNodeId("101");
-	   
-	   if(id1<0)
-	   {
-		firstNode = createNode();
-	
-	   addProperty( firstNode, "roomNo", "101" );
-	   }
-	   
-	   int id2 = getNodeId("102");
-	   
-	   if(id2<0)
-	   {
-	   secondNode = null;
-	   secondNode = createNode();
-	   addProperty( secondNode, "roomNo", "102" );
-	   }
-	   
-	   int id3 = getNodeId("103");
-	   
-	   if(id3<0)
-	   {
-	   thirdNode = null;
-	   thirdNode = createNode();
-	   addProperty( thirdNode, "roomNo", "103" );
-	   }
-	   
-	   int id4 = getNodeId("104");
-	   
-	   if(id4<0)
-	   {
-	   fourthNode = null;
-	   fourthNode = createNode();
-	   addProperty( fourthNode, "roomNo", "104" );
-	   }
-	   }
-	   catch (URISyntaxException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		} catch (IOException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	}
-	   
-
-		String string1 = "101";
-		String string2 = "102";
-		String string3 = "103";
-		String string4 = "104";
-		
-		int id1 = -1, id2 = -1,id3 = -1, id4 = -1;
-		
-		try {
-			id1 = getNodeId(string1);
-			id2 = getNodeId(string2);
-			id3 = getNodeId(string3);
-			id4 = getNodeId(string4);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		
+	    createDB();
+	    URI firstNode = null;
+		URI secondNode = null;
+		URI thirdNode = null;
+		URI fourthNode = null;
 		String result = null;
-	
+		//checkDatabaseIsRunning(context);
+		int id1 = -1, id2 = -1,id3 = -1, id4 = -1;
 		try {
+			id1 = getNodeId("101");
+			id2 = getNodeId("102");
+			id3 = getNodeId("103");
+			id4 = getNodeId("104");
 			firstNode = new URI(SERVER_ROOT_URI+"node/"+String.valueOf(id1));
 			secondNode = new URI(SERVER_ROOT_URI+"node/"+String.valueOf(id2));
 			thirdNode = new URI(SERVER_ROOT_URI+"node/"+String.valueOf(id3));
 			fourthNode = new URI(SERVER_ROOT_URI+"node/"+String.valueOf(id4));
-			//getShortestPath(firstNode, secondNode, 10, result, "dijkstra");
-		} 
+		
+			ShortestPath path = getShortestPath(firstNode, secondNode, 10, result, "dijkstra");
+			
+			printPath(path);
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	catch (URISyntaxException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-	   
-	   
-		URI relationshipUri = null;
-		try {
-			relationshipUri = addRelationship( firstNode, secondNode, "to",
-			           "{ \"from\" : \"101\", \"to\" : \"102\" }" );
-			addPropertyToRelationship(relationshipUri,5);
-			
-			relationshipUri = addRelationship( secondNode, thirdNode, "to",
-			           "{ \"from\" : \"102\", \"to\" : \"103\" }" );
-			addPropertyToRelationship(relationshipUri,5);
-			
-			
-			relationshipUri = addRelationship( thirdNode, fourthNode, "to",
-			           "{ \"from\" : \"103\", \"to\" : \"104\" }" );
-			addPropertyToRelationship(relationshipUri,5);
-			
-			
-			
-			
-		} catch (URISyntaxException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+	} 
+		return null;
+	}
+
+	private void createDB() {
+		   URI firstNode = null;
+		   URI secondNode = null;
+		   URI thirdNode = null;
+		   URI fourthNode = null;
+		   try {
+			   
+		   int id1 = getNodeId("101");
+		   
+		   if(id1<0)
+		   {
+			firstNode = createNode();
 		
-		addPropertyToRelationship(relationshipUri,5);
-		
-		//Creating relationship between second and third node
-		//System.out.println("RELATIONSHIP URI"+ relationshipUri);
-		
-		//get nodeid of a specific label and property
-		
-	
-		
-	
-		try {
-			
-			getShortestPath(firstNode, secondNode, 10, result, "dijkstra");
-		} 
-	/*	catch (URISyntaxException e) {
+		   addProperty( firstNode, "roomNo", "101" );
+		   }
+		   
+		   int id2 = getNodeId("102");
+		   
+		   if(id2<0)
+		   {
+		   secondNode = null;
+		   secondNode = createNode();
+		   addProperty( secondNode, "roomNo", "102" );
+		   }
+		   
+		   int id3 = getNodeId("103");
+		   
+		   if(id3<0)
+		   {
+		   thirdNode = null;
+		   thirdNode = createNode();
+		   addProperty( thirdNode, "roomNo", "103" );
+		   }
+		   
+		   int id4 = getNodeId("104");
+		   
+		   if(id4<0)
+		   {
+		   fourthNode = null;
+		   fourthNode = createNode();
+		   addProperty( fourthNode, "roomNo", "104" );
+		   }
+		   }
+		   catch (URISyntaxException e2) {
+				// TODO Auto-generated catch block
+				e2.printStackTrace();
+			} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} */
+		}
+		   
+		   
+		   
+
+			String string1 = "101";
+			String string2 = "102";
+			String string3 = "103";
+			String string4 = "104";
+			
+			int id1 = -1, id2 = -1,id3 = -1, id4 = -1;
+			
+			try {
+				id1 = getNodeId(string1);
+				id2 = getNodeId(string2);
+				id3 = getNodeId(string3);
+				id4 = getNodeId(string4);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			
+			String result = null;
+		
+			try {
+				firstNode = new URI(SERVER_ROOT_URI+"node/"+String.valueOf(id1));
+				secondNode = new URI(SERVER_ROOT_URI+"node/"+String.valueOf(id2));
+				thirdNode = new URI(SERVER_ROOT_URI+"node/"+String.valueOf(id3));
+				fourthNode = new URI(SERVER_ROOT_URI+"node/"+String.valueOf(id4));
+				//getShortestPath(firstNode, secondNode, 10, result, "dijkstra");
+			} 
+		catch (URISyntaxException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		   
+		   
+			URI relationshipUri = null;
+			try {
+				relationshipUri = addRelationship( firstNode, secondNode, "to",
+				           "{ \"from\" : \"101\", \"to\" : \"102\" }" );
+				addPropertyToRelationship(relationshipUri,5);
+				
+				relationshipUri = addRelationship( secondNode, thirdNode, "to",
+				           "{ \"from\" : \"102\", \"to\" : \"103\" }" );
+				addPropertyToRelationship(relationshipUri,15);
+				
+				
+				relationshipUri = addRelationship( thirdNode, fourthNode, "to",
+				           "{ \"from\" : \"103\", \"to\" : \"104\" }" );
+				addPropertyToRelationship(relationshipUri,20);
+				
+				
+				
+				
+			} catch (URISyntaxException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			
+			addPropertyToRelationship(relationshipUri,5);
+			
+			//Creating relationship between second and third node
+			//System.out.println("RELATIONSHIP URI"+ relationshipUri);
+			
+			//get nodeid of a specific label and property
+			
+		
+		
+	}
+	
+	@SuppressLint("NewApi") private void printPath(ShortestPath path) {
+		HttpClient httpClient = new DefaultHttpClient();
+		String NodeUriInPath = null;
+		HttpResponse response = null;
+		
+		List<String> roomsInPath = new ArrayList<String>();
+		try {
+			
+			//String propValue = "Room";
+			
+			List<String> nodes = path.getNodes();
+			
+			for(int i = 0;i<nodes.size();i++)
+			{
+				NodeUriInPath = nodes.get(i);
+				
+				//ClassNode classNode = getClassFromNodeID(NodeUriInPath);
+				HttpGet get = new HttpGet(NodeUriInPath);
+				get.addHeader("accept", "application/json");
+				response = httpClient.execute(get);	
+				
+				String content = view(response,NodeUriInPath);
+				InputStream stream = new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8));
+				
+				String roomNo = JsonParser.readJsonNodeinPathStream(stream);
+				roomsInPath.add(roomNo);
+				
+			}
+			
+		} 
 		catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} 
+		}
+		
+		
+		httpClient.getConnectionManager().shutdown();
+		
+		
+		
+	}
+	private String view(HttpResponse response,String  uri) {
+		String content = "";
+		try{
+            BufferedReader br = new BufferedReader(new InputStreamReader((response.getEntity().getContent())));
+            
+            String output  = "";
+            while ((output = br.readLine()) != null) {
+                content += output;
+            }
+            Log.i("result of query", content );
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		//Log.i("DBUTILS addLabel", String.format("[%s], status code [%d]", uri, response.getStatusLine().getStatusCode()) );
+		//Log.i("DBUTILS addLabel", "Status Code: " + response.getStatusLine().getStatusCode());
+		return content;
+		
+	}
+
+	private ClassNode getClassFromNodeID(String nodeUriInPath) {
+		// TODO Auto-generated method stub
 		return null;
 	}
+
 	private void addPropertyToRelationship(URI relationshipUri,int distance) {
 		HttpClient httpClient = new DefaultHttpClient();
 		String propertyOfRelationshipUri = null;
@@ -334,7 +426,7 @@ public class DatabaseUtil extends AsyncTask<Context, Context, Context>
 		
 		return nodeID;
 	}
-	private String getShortestPath(URI fromNode, URI toNode, int max_depth,String json , String algorithm) throws IOException
+	@SuppressLint("NewApi") private ShortestPath getShortestPath(URI fromNode, URI toNode, int max_depth,String json , String algorithm) throws IOException
     {
 		// TODO Auto-generated method stub
 		String fromURI = fromNode.toString() +"/path";
@@ -378,7 +470,12 @@ public class DatabaseUtil extends AsyncTask<Context, Context, Context>
 		Log.i("DBUTILS", content);
 		
 		Log.i("DBUTILS getShortestPath", "Status Code: " + response.getStatusLine().getStatusCode());
-		return content;
+		
+		InputStream stream = new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8));
+		
+		ShortestPath path = JsonParser.readJsonPathStream(stream);
+		
+		return path;
         
 	}
     
