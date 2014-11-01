@@ -234,7 +234,8 @@ public class DatabaseUtil extends AsyncTask<Context, Context, Context>
 		
 	}
 	
-	@SuppressLint("NewApi") private void printPath(ShortestPath path) {
+	@SuppressLint("NewApi") 
+	private void printPath(ShortestPath path) {
 		HttpClient httpClient = new DefaultHttpClient();
 		String NodeUriInPath = null;
 		HttpResponse response = null;
@@ -427,7 +428,6 @@ public class DatabaseUtil extends AsyncTask<Context, Context, Context>
 		return nodeID;
 	}
 	@SuppressLint("NewApi") private ShortestPath getShortestPath(URI fromNode, URI toNode, int max_depth,String json , String algorithm) throws IOException
-    {
 		// TODO Auto-generated method stub
 		String fromURI = fromNode.toString() +"/path";
 		String content = "";
