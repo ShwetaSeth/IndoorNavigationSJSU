@@ -11,7 +11,7 @@ public class ShortestPath {
 	private List<String> nodes = new ArrayList<String>(); 
 	private int lengthPath;  
 	private List<String> relationshipBetNodesOfPath = new ArrayList<String>(); 
-	private String end;
+	private String endNode;
 	private List<Relationship> relationshipData = new ArrayList<Relationship>(); 
 	
 	@Override
@@ -24,7 +24,7 @@ public class ShortestPath {
 		
 		return "ShortestPath [weight=" + weight + ", startNode=" + startNode
 				+ ", nodes=" + nodes + ", lengthPath=" + lengthPath + ", end="
-				+ end + ", relationshipData=" + relationshipsString.toString() + "]";
+				+ endNode + ", relationshipData=" + relationshipsString.toString() + "]";
 	}
 	public List<Relationship> getRelationshipData() {
 		return relationshipData;
@@ -74,10 +74,10 @@ public class ShortestPath {
 		this.relationshipBetNodesOfPath = relationshipBetNodesOfPath;
 	}
 	public String getEnd() {
-		return end;
+		return endNode;
 	}
 	public void setEnd(String end) {
-		this.end = end;
+		this.endNode = end;
 	}
 	
 	
