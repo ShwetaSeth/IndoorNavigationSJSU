@@ -1,5 +1,6 @@
 package com.sample.parser;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ShortestPath {
@@ -7,10 +8,30 @@ public class ShortestPath {
 	 
 	private String startNode;
 
-	private List<String> nodes; 
+	private List<String> nodes = new ArrayList<String>(); 
 	private int lengthPath;  
-	private List<String> relationshipBetNodesOfPath; 
+	private List<String> relationshipBetNodesOfPath = new ArrayList<String>(); 
 	private String end;
+	private List<Relationship> relationshipData = new ArrayList<Relationship>(); 
+	
+	@Override
+	public String toString() {
+		
+		StringBuffer relationshipsString = new StringBuffer();
+		for(int i = 0;i<relationshipData.size();i++)
+			relationshipsString.append("Relationship "+ i+1+": "+relationshipData.get(i).toString());
+			
+		
+		return "ShortestPath [weight=" + weight + ", startNode=" + startNode
+				+ ", nodes=" + nodes + ", lengthPath=" + lengthPath + ", end="
+				+ end + ", relationshipData=" + relationshipsString.toString() + "]";
+	}
+	public List<Relationship> getRelationshipData() {
+		return relationshipData;
+	}
+	public void setRelationshipData(List<Relationship> relationshipData) {
+		this.relationshipData = relationshipData;
+	}
 	/*public ShortestPath(int weight, String startNode, List<String> nodes,
 			int lengthPath, List<String> relationshipBetNodesOfPath, String end) {
 		super();

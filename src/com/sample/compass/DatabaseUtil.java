@@ -54,6 +54,7 @@ import org.apache.http.protocol.ExecutionContext;
 
 import com.sample.parser.ClassNode;
 import com.sample.parser.JsonParser;
+import com.sample.parser.Relationship;
 import com.sample.parser.ShortestPath;
 
 //import com.google.gson.Gson;
@@ -81,11 +82,6 @@ public class DatabaseUtil extends AsyncTask<Context, Context, Context>
 		
 	    context = params[0];
 	    createDB();
-	    URI firstNode = null;
-		URI secondNode = null;
-		URI thirdNode = null;
-		URI fourthNode = null;
-		String result = null;
 		//checkDatabaseIsRunning(context);
 		int id1 = -1, id2 = -1,id3 = -1, id4 = -1;
 		try {
@@ -93,14 +89,20 @@ public class DatabaseUtil extends AsyncTask<Context, Context, Context>
 			id2 = getNodeId("102");
 			id3 = getNodeId("103");
 			id4 = getNodeId("104");
-			firstNode = new URI(SERVER_ROOT_URI+"node/"+String.valueOf(id1));
-			secondNode = new URI(SERVER_ROOT_URI+"node/"+String.valueOf(id2));
-			thirdNode = new URI(SERVER_ROOT_URI+"node/"+String.valueOf(id3));
-			fourthNode = new URI(SERVER_ROOT_URI+"node/"+String.valueOf(id4));
+			URI firstNode = new URI(SERVER_ROOT_URI+"node/"+String.valueOf(id1));
+			URI secondNode = new URI(SERVER_ROOT_URI+"node/"+String.valueOf(id2));
+			URI thirdNode = new URI(SERVER_ROOT_URI+"node/"+String.valueOf(id3));
+			URI fourthNode = new URI(SERVER_ROOT_URI+"node/"+String.valueOf(id4));
 		
-			ShortestPath path = getShortestPath(firstNode, secondNode, 10, result, "dijkstra");
+			ShortestPath pathRaw = getShortestPath(firstNode, secondNode, "dijkstra");
 			
-			printPath(path);
+			//path with proper parsed data 
+			// use relationshipData to view the relationships and properties
+			ShortestPath path = printPath(pathRaw);
+			
+			
+			//this is the object that has to be used to navigate the user
+			Log.i("Shortest path Results to use", path.toString());
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -204,16 +206,16 @@ public class DatabaseUtil extends AsyncTask<Context, Context, Context>
 			try {
 				relationshipUri = addRelationship( firstNode, secondNode, "to",
 				           "{ \"from\" : \"101\", \"to\" : \"102\" }" );
-				addPropertyToRelationship(relationshipUri,5);
+				addPropertyToRelationship(relationshipUri,5,"left");
 				
 				relationshipUri = addRelationship( secondNode, thirdNode, "to",
 				           "{ \"from\" : \"102\", \"to\" : \"103\" }" );
-				addPropertyToRelationship(relationshipUri,15);
+				addPropertyToRelationship(relationshipUri,15,"left");
 				
 				
 				relationshipUri = addRelationship( thirdNode, fourthNode, "to",
 				           "{ \"from\" : \"103\", \"to\" : \"104\" }" );
-				addPropertyToRelationship(relationshipUri,20);
+				addPropertyToRelationship(relationshipUri,20,"left");
 				
 				
 				
@@ -223,7 +225,6 @@ public class DatabaseUtil extends AsyncTask<Context, Context, Context>
 				e1.printStackTrace();
 			}
 			
-			addPropertyToRelationship(relationshipUri,5);
 			
 			//Creating relationship between second and third node
 			//System.out.println("RELATIONSHIP URI"+ relationshipUri);
@@ -235,34 +236,67 @@ public class DatabaseUtil extends AsyncTask<Context, Context, Context>
 	}
 	
 	@SuppressLint("NewApi") 
-	private void printPath(ShortestPath path) {
+	private ShortestPath printPath(ShortestPath pathRaw) {
 		HttpClient httpClient = new DefaultHttpClient();
 		String NodeUriInPath = null;
 		HttpResponse response = null;
+		ShortestPath path = new ShortestPath();
 		
-		List<String> roomsInPath = new ArrayList<String>();
+		
+		
 		try {
 			
+			path.setWeight(pathRaw.getWeight());
+			path.setStartNode(getRoomNo(pathRaw.getStartNode()));
+			path.setLengthPath(pathRaw.getLengthPath());
+			path.setEnd(getRoomNo(pathRaw.getEnd()));
+
+		
 			//String propValue = "Room";
 			
-			List<String> nodes = path.getNodes();
+			List<String> nodes = pathRaw.getNodes();
+			List<String> roomsInPath = new ArrayList<String>();
 			
 			for(int i = 0;i<nodes.size();i++)
 			{
 				NodeUriInPath = nodes.get(i);
+				String roomNo = getRoomNo(NodeUriInPath);
+				roomsInPath.add(roomNo);
+				
+			}
+			
+			path.setNodes(roomsInPath);
+			
+			
+			List<String> relationships = pathRaw.getRelationshipBetNodesOfPath();
+			List<Relationship> relationshipsData = new ArrayList<Relationship>();
+			
+			for(int i = 0;i<relationships.size();i++)
+			{
+				String RelationshipUriInPath = relationships.get(i);
+				
 				
 				//ClassNode classNode = getClassFromNodeID(NodeUriInPath);
-				HttpGet get = new HttpGet(NodeUriInPath);
+				HttpGet get = new HttpGet(RelationshipUriInPath);
 				get.addHeader("accept", "application/json");
 				response = httpClient.execute(get);	
 				
 				String content = view(response,NodeUriInPath);
 				InputStream stream = new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8));
 				
-				String roomNo = JsonParser.readJsonNodeinPathStream(stream);
-				roomsInPath.add(roomNo);
+				Relationship relationship = JsonParser.readJsonRelationshipinPathStream(stream);
+				relationshipsData.add(relationship);
 				
 			}
+			
+			path.setRelationshipData(relationshipsData);
+			
+			
+			
+			
+			
+			
+			
 			
 		} 
 		catch (IOException e) {
@@ -273,9 +307,30 @@ public class DatabaseUtil extends AsyncTask<Context, Context, Context>
 		
 		httpClient.getConnectionManager().shutdown();
 		
+		return path;
+		
 		
 		
 	}
+	
+	@SuppressLint("NewApi") private String getRoomNo(String  uri) throws IOException{
+		HttpClient httpClient = new DefaultHttpClient();
+		String NodeUriInPath = null;
+		HttpResponse response = null;
+
+		HttpGet get = new HttpGet(uri);
+		get.addHeader("accept", "application/json");
+		response = httpClient.execute(get);	
+		
+		String content = view(response,NodeUriInPath);
+		InputStream stream = new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8));
+		
+		String roomNo = JsonParser.readJsonNodeinPathStream(stream);
+		return  roomNo;
+		
+	}
+	
+	
 	private String view(HttpResponse response,String  uri) {
 		String content = "";
 		try{
@@ -300,7 +355,7 @@ public class DatabaseUtil extends AsyncTask<Context, Context, Context>
 		return null;
 	}
 
-	private void addPropertyToRelationship(URI relationshipUri,int distance) {
+	private void addPropertyToRelationship(URI relationshipUri,int distance, String orientation) {
 		HttpClient httpClient = new DefaultHttpClient();
 		String propertyOfRelationshipUri = null;
 		HttpResponse response = null;
@@ -315,6 +370,15 @@ public class DatabaseUtil extends AsyncTask<Context, Context, Context>
 			entity.setContentType("application/json");
 			put.setEntity(entity);	
 			response = httpClient.execute(put);	
+			
+			propertyOfRelationshipUri = relationshipUri + "/properties/orientation";
+			put = new HttpPut(propertyOfRelationshipUri);
+			entity = new StringEntity( "\"" + orientation + "\"");
+			//StringEntity entity = new StringEntity( "Room");
+			entity.setContentType("application/json");
+			put.setEntity(entity);	
+			response = httpClient.execute(put);	
+	
 		} 
 		catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -427,7 +491,8 @@ public class DatabaseUtil extends AsyncTask<Context, Context, Context>
 		
 		return nodeID;
 	}
-	@SuppressLint("NewApi") private ShortestPath getShortestPath(URI fromNode, URI toNode, int max_depth,String json , String algorithm) throws IOException
+	@SuppressLint("NewApi") private ShortestPath getShortestPath(URI fromNode, URI toNode, String algorithm) throws IOException
+    {
 		// TODO Auto-generated method stub
 		String fromURI = fromNode.toString() +"/path";
 		String content = "";

@@ -60,7 +60,18 @@ import android.util.Log;
 		JsonReader reader = new JsonReader(new InputStreamReader(in, "UTF-8"));
         Log.i("what is in stream", String.valueOf(in));
         try {
-          return  ReadNodeinPath.readClassFromNode(reader);
+          return  ReadPathJson.readClassFromNodeURI(reader);
+        }
+         finally {
+          reader.close();
+        }
+	}
+
+	public static Relationship readJsonRelationshipinPathStream(InputStream in) throws IOException {
+		JsonReader reader = new JsonReader(new InputStreamReader(in, "UTF-8"));
+        Log.i("what is in stream", String.valueOf(in));
+        try {
+          return  ReadPathJson.readRelationFromRelationshipURI(reader);
         }
          finally {
           reader.close();
